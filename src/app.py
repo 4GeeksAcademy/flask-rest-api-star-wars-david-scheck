@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, User, Person, PersonFavorite
 #from models import Person
 
 app = Flask(__name__)
@@ -44,6 +44,48 @@ def handle_hello():
     }
 
     return jsonify(response_body), 200
+
+@app.route('/people', methods=['GET'])
+def get_all_people():
+
+    error = None
+    serialized_people = None
+
+    try:
+        people = Person.query.all()
+        serialized_people = [person.serialize() for person in people]
+        # print(data)
+        
+    except:
+        error = 'Failed to fetch people'        
+
+    response_body = {
+        "data": serialized_people,
+        "error": error,
+    }
+    status_code = 200 if not error else 500
+
+    return jsonify(response_body), status_code
+
+@app.route('/users/favorites', methods=['GET'])
+def get_all_user_favorites():
+
+    error = None
+    user_favorites = None
+
+    try:
+        user = User.query.get(1)
+        user_favorites = [person.serialize() for person in user.person_favorites]
+    except:
+        error = 'Failed to fetch people'        
+
+    response_body = {
+        "data": user_favorites,
+        "error": error,
+    }
+    status_code = 200 if not error else 500
+
+    return jsonify(response_body), status_code
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
